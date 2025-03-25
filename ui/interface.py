@@ -1,14 +1,18 @@
 import streamlit as st
 import os
+import sys
 from pathlib import Path
 from datetime import datetime
 import json
 import tempfile
-from main import query_financial_assistant, ingest_files, save_uploaded_file  # Importing the main functionality
+
+# Add the parent directory to sys.path to allow importing main
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from main import query_financial_assistant, ingest_files  # Importing the main functionality
 
 # Set page config for dark mode and wide layout
 st.set_page_config(
-    page_title="Financial LLM Assistant",
+    page_title="FinWise - Financial Assistant",
     page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -98,11 +102,31 @@ if 'current_chat' not in st.session_state:
     st.session_state.current_chat = None
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = []
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+if 'messages' not in st.session_state:  # Add this for chat messages
+    st.session_state.messages = []
+
+def save_uploaded_file(uploaded_file):
+    """Save the uploaded file to a temporary location"""
+    try:
+        # Create a temporary directory
+        temp_dir = tempfile.mkdtemp()
+        file_path = os.path.join(temp_dir, uploaded_file.name)
+        
+        # Write the file
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+            
+        return file_path
+    except Exception as e:
+        st.error(f"Error saving file: {e}")
+        return None
 
 # Sidebar Layout
 def render_sidebar():
     with st.sidebar:
-        st.title("Financial Assistant")
+        st.title("FinWise 💰")
         
         # New Chat Button
         if st.button("🆕 New Chat", key="new_chat"):
@@ -113,13 +137,21 @@ def render_sidebar():
             st.session_state.chats[chat_id] = []
             st.session_state.active_chats.append(chat_id)
             st.session_state.current_chat = chat_id
-            st.experimental_rerun()
+            # Reset chat history for new chat
+            st.session_state.chat_history = []
+            st.rerun()
         
         # File Upload with Dropdown
-        st.subheader("📁 Upload Files")
+        st.subheader("📁 Upload Financial Documents")
         upload_option = st.selectbox("Choose Upload Type", 
             ["Single File", "Multiple Files"]
         )
+        
+        # Metadata inputs
+        st.subheader("Document Metadata (Optional)")
+        source = st.text_input("Source (e.g., annual_report, market_data)")
+        company = st.text_input("Company Name or Ticker Symbol")
+        year = st.text_input("Year")
         
         if upload_option == "Single File":
             uploaded_file = st.file_uploader(
@@ -152,20 +184,36 @@ def render_sidebar():
                 with col2:
                     if st.button("❌", key=f"remove_{file.name}"):
                         st.session_state.uploaded_files.remove(file)
-                        st.experimental_rerun()
+                        st.rerun()
             
             if st.button("Process Files"):
                 with st.spinner("Processing files..."):
                     try:
                         # Save uploaded files temporarily
                         temp_files = []
+                        metadata_list = []
+                        
                         for file in st.session_state.uploaded_files:
-                            file_path = save_uploaded_file(file.getvalue(), file.name)
-                            temp_files.append(file_path)
+                            file_path = save_uploaded_file(file)
+                            if file_path:
+                                temp_files.append(file_path)
+                                
+                                # Create metadata dictionary
+                                metadata = {}
+                                if source:
+                                    metadata["source"] = source
+                                if company:
+                                    metadata["company"] = company
+                                if year:
+                                    metadata["year"] = year
+                                
+                                metadata_list.append(metadata)
                         
                         # Ingest files
-                        count = ingest_files(temp_files)
-                        st.success(f"Successfully processed {count} document chunks!")
+                        if temp_files:
+                            metadata_list = metadata_list if any(metadata_list) else None
+                            count = ingest_files(temp_files, metadata_list)
+                            st.success(f"Successfully processed {count} document chunks!")
                     except Exception as e:
                         st.error(f"Error processing files: {str(e)}")
         
@@ -176,50 +224,52 @@ def render_sidebar():
             with col1:
                 if st.button(f"Chat {chat_id.split('_')[1]}", key=chat_id):
                     st.session_state.current_chat = chat_id
-                    st.experimental_rerun()
+                    st.rerun()
             with col2:
                 if st.button("❌", key=f"close_{chat_id}"):
                     st.session_state.active_chats.remove(chat_id)
                     if chat_id == st.session_state.current_chat:
                         st.session_state.current_chat = None
-                    st.experimental_rerun()
+                    st.rerun()
 
 # Main Chat Interface
 def render_chat_interface():
     if st.session_state.current_chat:
         chat_messages = st.session_state.chats[st.session_state.current_chat]
         
-        # Chat Messages Container
-        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        st.title("FinWise - Your Financial Assistant")
+        st.markdown("""
+        Ask me anything about investing, financial markets, or personal finance. 
+        I'm here to help you make informed financial decisions!
+        """)
+        
+        # Chat Messages Container using st.chat_message
         for message in chat_messages:
-            css_class = "user-message" if message["role"] == "user" else "assistant-message"
-            st.markdown(f"""
-                <div class="chat-message {css_class}">
-                    <strong>{'You' if message['role'] == 'user' else 'Assistant'}:</strong>
-                    {message["content"]}
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
         
-        # Chat Input
-        user_input = st.text_input("Type your message...", key="user_input")
+        # Chat Input using st.chat_input
+        user_input = st.chat_input("Ask a financial question...")
         
-        if st.button("Send Message"):
-            if user_input:
-                # Add user message
-                chat_messages.append({"role": "user", "content": user_input})
-                
-                # Get assistant response
-                try:
-                    with st.spinner("Thinking..."):
+        if user_input:
+            # Add user message
+            chat_messages.append({"role": "user", "content": user_input})
+            with st.chat_message("user"):
+                st.markdown(user_input)
+            
+            # Get assistant response
+            try:
+                with st.spinner("Thinking..."):
+                    with st.chat_message("assistant"):
                         response = query_financial_assistant(user_input)
+                        st.markdown(response)
                         chat_messages.append({"role": "assistant", "content": response})
-                except Exception as e:
-                    st.error(f"Error processing message: {str(e)}")
-                
-                # Clear input and rerun
-                st.session_state.user_input = ""
-                st.experimental_rerun()
+                        
+                        # Update chat history
+                        st.session_state.chat_history.append({"role": "user", "content": user_input})
+                        st.session_state.chat_history.append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.error(f"Error processing message: {str(e)}")
     else:
         st.info("Start a new chat or select an existing one from the sidebar!")
 
@@ -230,7 +280,7 @@ def main():
     
     # Footer
     st.markdown("---")
-    st.markdown("Financial Assistant | Powered by AI")
+    st.markdown("FinWise | Powered by Gemini 1.5 Pro")
 
 # Run the app
 if __name__ == "__main__":

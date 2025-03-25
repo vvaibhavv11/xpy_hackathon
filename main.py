@@ -164,26 +164,28 @@ def query_financial_assistant(query: str):
     llm, embeddings = setup_llm_and_embeddings()
     vector_store = setup_vector_store(embeddings)
     
-    # Create prompt template
-    prompt = PromptTemplate.from_template(FINANCIAL_EXPERT_PROMPT)
-    
-    # Create retriever
-    retriever = vector_store.as_retriever(
-        search_type="mmr",
-        search_kwargs={"k": 5, "fetch_k": 10}
-    )
-    
-    # Create QA chain
-    qa_chain = (
-        {"context": retriever, "question": RunnablePassthrough()}
-        | prompt
-        | llm
-    )
-    
-    # Get response
-    response = qa_chain.invoke(query)
-    
-    return response.content
+    try:
+        # Create prompt template
+        prompt = PromptTemplate.from_template(FINANCIAL_EXPERT_PROMPT)
+        
+        # Create retriever with error handling
+        retriever = vector_store.as_retriever(
+            search_type="mmr",
+            search_kwargs={"k": 5, "fetch_k": 10}
+        )
+        
+        # Create QA chain
+        qa_chain = (
+            {"context": retriever, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+        )
+        
+        # Get response with timeout
+        response = qa_chain.invoke(query)
+        return response.content
+    except Exception as e:
+        return f"I apologize, but I encountered an error: {str(e)}. Please try again or rephrase your question."
 
 def main():
     print("FinWise - Financial Assistant")
