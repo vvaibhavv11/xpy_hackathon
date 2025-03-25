@@ -1,27 +1,43 @@
 # FinWise - Financial Assistant
 
-A GenAI-powered financial assistant that helps users make better investing decisions by answering questions and providing guidance.
+FinWise is an AI-powered financial assistant that helps users make informed financial decisions. It uses Gemini 1.5 Pro to provide clear, accurate financial information and explain complex financial concepts in simple terms.
+
+## Features
+
+- Chat-based interface for asking financial questions
+- Document upload and processing for context-aware responses
+- Support for multiple file formats (PDF, CSV, TXT, XLSX, JSON)
+- Metadata tagging for better document organization
+- Multiple chat sessions management
+- Dark mode UI for comfortable usage
 
 ## Setup
 
-1. Install dependencies:
-   ```
-   uv pip install -r requirements.txt
-   ```
+### Prerequisites
 
-2. Set up PostgreSQL:
-   Make sure you have PostgreSQL running with the correct credentials as specified in the `DB_CONNECTION` variable in `main.py`.
+- Python 3.8+
+- PostgreSQL database
+- Google API key for Gemini 1.5 Pro
 
-3. Set your Google API key:
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Set up PostgreSQL database:
+   ```
+   docker run -d --name postgres-vector -p 6024:5432 -e POSTGRES_USER=langchain -e POSTGRES_PASSWORD=langchain -e POSTGRES_DB=langchain ankane/pgvector
+   ```
+4. Set your Google API key:
    ```
    export GOOGLE_API_KEY="your_api_key_here"
    ```
 
-## Running the Application
+### Running the Application
 
-### Streamlit UI
-
-Run the Streamlit application:
+Start the Streamlit app:
 
 ```
 streamlit run streamlit_app.py

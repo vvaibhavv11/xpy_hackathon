@@ -1,0 +1,16 @@
+finwise/
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   ├── document_processor.py
+│   └── assistant.py
+├── ui/
+│   ├── components/
+│   │   ├── __init__.py
+│   │   ├── sidebar.py
+│   │   └── chat.py
+│   ├── interface.py
+│   └── styles.py
+├── app.py
+└── requirements.txt 
