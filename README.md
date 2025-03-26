@@ -10,6 +10,7 @@ FinWise is an AI-powered financial assistant that helps users make informed fina
 - Metadata tagging for better document organization
 - Multiple chat sessions management
 - Dark mode UI for comfortable usage
+- Interactive data visualizations using Plotly
 
 ## Setup
 
@@ -47,6 +48,7 @@ This will start the web interface where users can:
 - Upload financial documents
 - Chat with the financial assistant
 - Get answers to their financial questions
+- Create data visualizations
 
 ### Command Line Usage
 
@@ -67,6 +69,7 @@ You can also use the application from the command line:
 - `main.py` - Core functionality for document processing and querying
 - `streamlit_app.py` - Streamlit UI for user interaction
 - `requirements.txt` - Dependencies for the project
+- `finwise/core/visualization_tool.py` - Plotly-based visualization tool for data charts
 
 ## Supported File Types
 
@@ -75,3 +78,23 @@ You can also use the application from the command line:
 - Text (.txt)
 - Excel (.xlsx, .xls)
 - JSON (.json)
+
+## Data Visualization
+
+FinWise includes a powerful visualization tool that can create various types of charts and graphs using Plotly. You can create visualizations by asking the assistant with commands like:
+
+- "Show me a bar chart of my monthly expenses"
+- "Create a pie chart of my investment portfolio"
+- "Visualize my stock performance over time"
+
+### Supported Chart Types
+
+- Bar charts
+- Line charts
+- Pie charts
+- Scatter plots
+- Histograms
+- Box plots
+- Heatmaps
+
+The visualization tool can handle data in multiple formats (JSON, lists, or pandas DataFrames) and can output both HTML visualizations and base64-encoded PNG images.
