@@ -14,7 +14,6 @@ def render_sidebar():
         
         render_file_upload_section()
         render_chat_history()
-        render_visualization_demo()
 
 def create_new_chat():
     """Create a new chat session"""
@@ -87,35 +86,4 @@ def render_chat_history():
                 st.session_state.active_chats.remove(chat_id)
                 if chat_id == st.session_state.current_chat:
                     st.session_state.current_chat = None
-                st.rerun()
-
-def render_visualization_demo():
-    """Render visualization demo section"""
-    st.subheader("📊 Visualization Demo")
-    
-    if st.button("Show Expense Chart Demo"):
-        if st.session_state.current_chat:
-            # Add the demo query to the current chat
-            chat_messages = st.session_state.chats[st.session_state.current_chat]
-            chat_messages.append({"role": "user", "content": "Visualize my monthly expenses as a bar chart"})
-            st.rerun()
-        else:
-            st.warning("Please start a new chat first!")
-    
-    if st.button("Show Investment Portfolio Demo"):
-        if st.session_state.current_chat:
-            # Add the demo query to the current chat
-            chat_messages = st.session_state.chats[st.session_state.current_chat]
-            chat_messages.append({"role": "user", "content": "Show me a pie chart of my investment portfolio"})
-            st.rerun()
-        else:
-            st.warning("Please start a new chat first!")
-    
-    if st.button("Show Stock Performance Demo"):
-        if st.session_state.current_chat:
-            # Add the demo query to the current chat
-            chat_messages = st.session_state.chats[st.session_state.current_chat]
-            chat_messages.append({"role": "user", "content": "Create a line chart of my stock performance over time"})
-            st.rerun()
-        else:
-            st.warning("Please start a new chat first!") 
+                st.rerun() 

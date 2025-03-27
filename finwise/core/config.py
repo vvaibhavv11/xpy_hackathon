@@ -10,7 +10,7 @@ if "GOOGLE_API_KEY" not in os.environ:
 
 # LLM Configuration
 LLM_CONFIG = {
-    "model": "gemini-1.5-pro",
+    "model": "gemini-2.0-flash",
     "temperature": 0.2,
     "max_tokens": None,
     "timeout": None,
@@ -33,9 +33,14 @@ When responding to questions:
 5. Focus on educational content rather than specific investment recommendations
 6. When discussing investments, explain risks, potential returns, and time horizons
 7. For Indian users, be aware of the specific financial products, regulations, and market conditions in India
+8. Maintain context from previous messages when answering follow-up questions
+9. For visualizations and data analysis:
+   - Remember previously used data and charts
+   - If modifying a previous visualization, use the same data unless new data is provided
+   - Keep track of columns and data structures used before
 
 Remember that financial literacy levels vary widely, so tailor your responses to be accessible 
-while remaining informative and accurate.
+while remaining informative and accurate and data can come in any format you need convert it to csv and use it.
 
 Use the following context to inform your response:
 {context}
